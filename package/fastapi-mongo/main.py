@@ -3,7 +3,7 @@ from routers import user, auth
 from fastapi.middleware.cors import CORSMiddleware
 from core.database import client, db
 
-app = FastAPI()
+app = FastAPI(title="FastAPI mongo",version="0.0.5",description="FastAPI mongo CRUD operations with Cookie Authorization")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

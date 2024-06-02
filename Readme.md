@@ -2,6 +2,10 @@
 
 This is a simple package that helps you to create a FastAPI project with MongoDB it comes with default crud operations and database setup just configure your environment variables and you are good to go.
 
+## Preview of the swagger UI docs
+![Swagger UI](./assets/swaggerui.png)
+
+
 ## Included working authentication as well
 It includes authentication setup as well just change the environment varibles and you are good to go 
 
@@ -9,6 +13,12 @@ It includes authentication setup as well just change the environment varibles an
 ```
 pip install fastapi-mongo
 ```
+## Bulding the project
+build the project using the following command
+```
+build
+```
+
 ## Provided folder structure is as follows
 ```
 .
@@ -57,28 +67,34 @@ pip install fastapi-mongo
 -  `requirements.txt`: This file contains the required packages for the project
 
 ## Usage
-- Create a `.env` file in the root directory of the project and add the following environment variables:
+- Create a `.env` file in the root directory of the project or rename the `.env.sample` to `.env` and add the following environment variables:
 ```
 MONGO_URI=<your_mongo_uri>
 SECRET_KEY
 ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES
 ```
-- Run the following command to install the required packages:
+- Change the db name in the `core/database.py` file as per your requirement.
 ```
-pip install -r requirements.txt
+db=client["fastapi-mongo"]
+users_collection = db["users"]
+```
+- If you want to run the default then create a database with the name `fastapi-mongo` in your MongoDB instance.
 
-```
+
+
 - Run the following command to start the FastAPI app:
 ```
 uvicorn main:app --reload
 ```
+
+
 - The FastAPI app will start running on `http://localhost:8000`.
 - Navigate to `http://localhost:8000/docs` to view the Swagger UI and test the API endpoints.
 - You can also navigate to `http://localhost:8000/redoc` to view the ReDoc documentation.
-  
-## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+
+
 
 
 
