@@ -28,5 +28,8 @@ def get_folder_structure(rootdir):
 rootdir = './fastapi-mongo'
 folder_structure = get_folder_structure(rootdir)
 
+
+
+
 with open('folder_structure.json', 'w') as json_file:
     json.dump(folder_structure, json_file, indent=4)
