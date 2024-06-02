@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='fastapi-mongo',
-    version='0.0.1',
+    version='0.0.5',
     long_description='This is a simple package that helps you to create a FastAPI project with MongoDB it comes with default crud operations and database setup just configure your environment variables and you are good to go.',
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -15,15 +15,14 @@ setup(
     ],
     packages=find_packages(),
     data_files=[
-        ('', ['folder_structure.json']),
+        ('', ['package/folder_structure.json']),
     ],
     include_package_data=True,
     install_requires=["fastapi", "pymongo", "python-dotenv",
-                      "uvicorn", "passlib", "python-jose", "python-multipart"],
-    scripts=['create_json.py'],
+                      "uvicorn", "passlib", "python-jose", "python-multipart", 'setuptools',],
     entry_points={
         'console_scripts': [
-            'build=build_structure:create_files_and_dirs_from_json',
+            'build=package.build_structure:create_files_and_dirs_from_json',
         ],
     },
 )
