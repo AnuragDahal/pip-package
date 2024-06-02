@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+
 setup(
     name='fastapi-mongo',
     version='0.1.0',
@@ -17,6 +18,12 @@ setup(
         ('', ['folder_structure.json']),
     ],
     include_package_data=True,
-    install_requires=["fastapi", "pymongo", "python-dotenv", "uvicorn", "passlib", "python-jose", "python-multipart"],
+    install_requires=["fastapi", "pymongo", "python-dotenv",
+                      "uvicorn", "passlib", "python-jose", "python-multipart"],
     scripts=['create_json.py'],
+    entry_points={
+        'console_scripts': [
+            'build=build_structure:create_files_and_dirs_from_json',
+        ],
+    },
 )

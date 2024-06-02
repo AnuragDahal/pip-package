@@ -1,107 +1,107 @@
 {
-    "./fastapi-mongo": [
+    ".": [
         {
-            "path": "./fastapi-mongo/.gitignore",
+            "path": "./.gitignore",
             "content": "tempcoderunner\n**/__pycache__/\n**/.vscode/\n.env\nenv/"
         },
         {
-            "path": "./fastapi-mongo/requirements.txt",
+            "path": "./requirements.txt",
             "content": "annotated-types==0.7.0\nanyio==4.4.0\ncertifi==2024.2.2\ncffi==1.16.0\nclick==8.1.7\ncryptography==42.0.7\ndnspython==2.6.1\necdsa==0.19.0\nemail-validator==2.1.1\nfastapi==0.108.0\nfastapi-cli==0.0.4\nh11==0.14.0\nhttpcore==1.0.5\nhttptools==0.6.1\nhttpx==0.27.0\nidna==3.7\njinja2==3.1.4\njwt==1.3.1\nmarkdown-it-py==3.0.0\nmarkupsafe==2.1.5\nmdurl==0.1.2\norjson==3.10.3\npasslib==1.7.4\npyasn1==0.6.0\npycparser==2.22\npydantic==2.7.1\npydantic-core==2.18.2\npygments==2.18.0\npymongo==4.6.1\npython-dotenv==1.0.0\npython-jose==3.3.0\npython-multipart==0.0.9\npyyaml==6.0.1\nrich==13.7.1\nrsa==4.9\nshellingham==1.5.4\nsix==1.16.0\nsniffio==1.3.1\nstarlette==0.32.0.post1\ntyper==0.12.3\ntyping-extensions==4.12.0\nujson==5.10.0\nuvicorn==0.25.0\nuvloop==0.19.0\nwatchfiles==0.22.0\nwebsockets==12.0\n"
         },
         {
-            "path": "./fastapi-mongo/main.py",
+            "path": "./main.py",
             "content": "from fastapi import FastAPI\nfrom routers import user, auth\nfrom fastapi.middleware.cors import CORSMiddleware\nfrom core.database import client, db\n\napp = FastAPI()\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"*\"],\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\n\ntry:\n    client.admin.command(\"ping\")\n    print(\"Connected to MongoDB\")\nexcept Exception as e:\n    print(\"Failed to connect to MongoDB\")\n    print(e)\n\n\ndef root():\n    return {\"message\": \"Hello World\"}\n\n\n# include routers from routers folder\napp.include_router(user.router)\napp.include_router(auth.router)\n"
         },
         {
-            "path": "./fastapi-mongo/.env.sample",
+            "path": "./.env.sample",
             "content": "MONGO_URI=\"your mongo uri\"\nSECRET_KEY = \"4d2d63872da9bacbe250ddf9c2c948ff0a2664aece7a988827b8a67d88cda078\"\nALGORITHM = \"HS256\"\nACCESS_TOKEN_EXPIRE_MINUTES = 30"
         },
         {
-            "path": "./fastapi-mongo/__init__.py",
+            "path": "./__init__.py",
             "content": ""
         },
         {
-            "path": "./fastapi-mongo/Readme.md",
+            "path": "./Readme.md",
             "content": "# FastAPI MongoDB CRUD and Authentication Skeleton\n\nThis repository serves as a skeleton for a FastAPI project that includes CRUD (Create, Read, Update, Delete) operations using MongoDB and a fully functional user authentication system.\n\n## Features\n\n- FastAPI integration for building API endpoints\n- MongoDB integration for CRUD operations\n- User authentication with login and logout functionality\n- Basic folder structure to get you started quickly\n\n## Prerequisites\n\nMake sure you have the following installed on your system:\n\n- Python 3.12(may work on 3.7 or higher)\n- MongoDB\n\n## Getting Started\n\n1. Clone the repository:\n\n   ```bash\n   git clone https://github.com/AnuragDahal/fastapi-mongodb-crud-auth-skeleton.git\n\n2. Create a `.env` file and copy the contents of `.env.sample`. Edit the file accordingly.\n"
         }
     ],
-    "./fastapi-mongo/routers": [
+    "./routers": [
         {
-            "path": "./fastapi-mongo/routers/auth.py",
+            "path": "./routers/auth.py",
             "content": "from fastapi.security import OAuth2PasswordRequestForm\nfrom fastapi import APIRouter, Depends, status, Response\nfrom handlers.authhandler import AuthHandler\nrouter = APIRouter(tags=[\"auth\"])\n\n\n@router.post(\"/login\", status_code=status.HTTP_200_OK)\nasync def login(request: OAuth2PasswordRequestForm = Depends()):\n\n    user_in = AuthHandler.login(request)\n    return user_in\n\n\n@router.post(\"/logout\")\nasync def logout(res: Response):\n\n    user_out = AuthHandler.logout(res)\n    return user_out\n"
         },
         {
-            "path": "./fastapi-mongo/routers/user.py",
+            "path": "./routers/user.py",
             "content": "from fastapi import APIRouter, status, Request, Depends, Response\nfrom handlers.userhandler import UserManager\nfrom typing import List\nfrom config.dependencies import verify_token\nfrom models import schemas\nrouter = APIRouter(tags=[\"user\"])\n\n\n@router.post(\"/user\", status_code=status.HTTP_201_CREATED,)\nasync def create_user(req: schemas.User):\n\n    user = UserManager.create(req)\n    return user\n\n\n@router.get(\"/user\", response_model=List[schemas.User], status_code=status.HTTP_200_OK,)\nasync def read_user():\n\n    user = UserManager.read()\n    return user\n\n\n@router.patch(\"/update/{old_email}\", response_model=schemas.User, status_code=status.HTTP_200_OK, dependencies=[Depends(verify_token)])\nasync def update_user(old_email: str, request: Request, new_email: schemas.UpdateUserEmail):\n\n    update_data = await UserManager.update(old_email, request, new_email)\n    return update_data\n\n\n@router.delete(\"/delete\", status_code=status.HTTP_200_OK,)\nasync def delete_user(request: Request, res: Response, depends=Depends(verify_token)):\n\n    user = await UserManager.delete(request, res)\n    return user\n"
         }
     ],
-    "./fastapi-mongo/config": [
+    "./config": [
         {
-            "path": "./fastapi-mongo/config/dependencies.py",
+            "path": "./config/dependencies.py",
             "content": "from fastapi import Depends, HTTPException, status, Response,Request\nfrom typing import Annotated\nfrom fastapi.security import OAuth2PasswordBearer\nfrom jose import JWTError, jwt\nfrom utils.envutils import Environment\n\nenv= Environment()\n\noauth2_scheme = OAuth2PasswordBearer(tokenUrl=\"login\")\n\n\nasync def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):\n\n    return verify_token\n\n\n\n\nasync def verify_token(req: Request, res: Response):\n    try:\n        token = await req.cookies.get(\"token\")\n\n        if token is None:\n            raise HTTPException(\n                status_code=status.HTTP_401_UNAUTHORIZED,\n                detail=\"Could not validate credentials: Token missing\",\n                headers={\"WWW-Authenticate\": \"Bearer\"},\n            )\n\n        payload = jwt.decode(token, env.secret_key, algorithms=[env.algorithm])\n        email: str = payload.get(\"sub\")\n\n        if email is None:\n            raise HTTPException(\n                status_code=status.HTTP_401_UNAUTHORIZED,\n                detail=\"Could not validate credentials: 'sub' claim missing\",\n                headers={\"WWW-Authenticate\": \"Bearer\"},\n            )\n        # req.state.token_data = token_data  # Store the token_data in the request state\n    except JWTError:\n        raise HTTPException(\n            status_code=status.HTTP_401_UNAUTHORIZED,\n            detail=\"Could not validate credentials\",\n            headers={\"WWW-Authenticate\": \"Bearer\"},\n        )\n\n    return res\n"
         },
         {
-            "path": "./fastapi-mongo/config/__init__.py",
+            "path": "./config/__init__.py",
             "content": ""
         }
     ],
-    "./fastapi-mongo/handlers": [
+    "./handlers": [
         {
-            "path": "./fastapi-mongo/handlers/userhandler.py",
+            "path": "./handlers/userhandler.py",
             "content": "from models import schemas\nfrom fastapi import Request, Depends, Response\nfrom core.database import user_collection\nfrom handlers.exception import ErrorHandler\nfrom pymongo import ReturnDocument\nfrom config.dependencies import verify_token\n\n# from utils.passhashutils import Encryptor\n\n\nclass Validate:\n    @staticmethod\n    def verify_email(email: str):\n        check_email = user_collection.find_one({\"email\": email})\n        if check_email:\n            return email\n        raise ErrorHandler.NotFound(\"Email not found\")\n\n\nclass UserManager:\n    @staticmethod\n    def create(request: schemas.User):\n        \"\"\"\n        Insert a new user record.\n        A unique `id` will be created and provided in the response.\n        \"\"\"\n        duplicate_user = user_collection.find_one({\"email\": request.email})\n        if not duplicate_user:\n            # Import Encryptor only when it's needed\n            from utils.passhashutils import Encryptor\n            hashed_password = Encryptor.hash_password(request.password)\n            new_user = user_collection.insert_one(\n                {**request.model_dump(exclude={\"password\"}), \"password\": hashed_password})\n            return {\"id\": str(new_user.inserted_id)}\n        return ErrorHandler.ALreadyExists(\"User already exists\")\n\n    @staticmethod\n    def read():\n        \"\"\"\n        Retrieve all user records.\n        \"\"\"\n        count = user_collection.count_documents({})\n        if count > 0:\n            users = user_collection.find()\n            return users\n        else:\n            raise ErrorHandler.NotFound(\"No user found\")\n\n    @staticmethod\n    async def update(old_email: str, request: Request, new_email: schemas.UpdateUserEmail):\n        \"\"\"\"\"\"\n        # Get the user email from the cookie\n        logged_in_user_email = await verify_token(request)\n        print(logged_in_user_email)\n        print(old_email)\n        # Check email from the cookie and the email to be updated are same\n        if old_email != logged_in_user_email:\n            raise ErrorHandler.Forbidden(\n                \"You are not authotrized to perform this action\")\n            # check if the new email entered is available or not\n        is_available = user_collection.find_one({\"email\": new_email.email})\n        if not is_available:\n            user = user_collection.find_one_and_update(\n                {\"email\": logged_in_user_email},\n                {\"$set\": {\"email\": new_email.email}},\n                return_document=ReturnDocument.AFTER\n            )\n            if user is None:\n                raise ErrorHandler.NotFound(\"User not found\")\n            return user\n        else:\n            return ErrorHandler.Error(\"Bad request\")\n\n    @staticmethod\n    async def delete(request: Request, res: Response):\n        \"\"\"\n        Delete a user\n        \"\"\"\n        # Get the user email from the cookie\n        user_email = await verify_token(request)\n        # Delete the user through the email\n        deleted_user = user_collection.delete_one({\"email\": user_email})\n        res.delete_cookie('token')\n        if deleted_user.deleted_count == 0:\n            raise ErrorHandler.NotFound(\"User not found\")\n        return {\"message\": \"User deleted successfully\"}\n"
         },
         {
-            "path": "./fastapi-mongo/handlers/exception.py",
+            "path": "./handlers/exception.py",
             "content": "from fastapi import HTTPException\n\n\nclass ErrorHandler:\n    def Error(e):\n        raise HTTPException(status_code=400, detail=str(e))\n\n    def NotFound(e):\n        raise HTTPException(status_code=404, detail=str(e))\n\n    def Unauthorized(e):\n        raise HTTPException(status_code=401, detail=str(e))\n\n    def Forbidden(e):\n        raise HTTPException(status_code=403, detail=str(e))\n\n    def ServerError(e):\n        raise HTTPException(status_code=500, detail=str(e))\n\n    def ALreadyExists(e):\n        raise HTTPException(status_code=409, detail=str(e))\n"
         },
         {
-            "path": "./fastapi-mongo/handlers/authhandler.py",
+            "path": "./handlers/authhandler.py",
             "content": "from fastapi import Depends, Response\nfrom fastapi.security import OAuth2PasswordRequestForm\nfrom fastapi.responses import JSONResponse\nfrom jose import jwt\nfrom datetime import timedelta\nfrom utils.envutils import Environment\nfrom handlers.exception import ErrorHandler\nfrom utils.jwtutil import create_access_token\nfrom handlers.userhandler import Validate\n\nenv = Environment()\nSECRET_KEY = env.secret_key\nALGORITHM = env.algorithm\nACCESS_TOKEN_EXPIRE_MINUTES = env.access_token_expire_minutes\nTOKEN_TYPE = env.TOKEN_TYPE\nTOKEN_KEY = env.TOKEN_KEY\n\n\nclass AuthHandler:\n    @staticmethod\n    def login(request: OAuth2PasswordRequestForm = Depends()):\n        user_email = Validate.verify_email(request.username)\n        print(user_email)\n        if user_email:\n            access_token_expires = timedelta(\n                minutes=ACCESS_TOKEN_EXPIRE_MINUTES)\n            access_token = create_access_token(\n                data={\"sub\": user_email}, expires_delta=access_token_expires)\n\n            response = JSONResponse(\n                content={\"access_token\": access_token,\n                         \"token_type\": TOKEN_TYPE}\n            )\n\n            response.set_cookie(key=TOKEN_KEY, value=access_token,\n                                expires=access_token_expires.total_seconds())\n\n            return response\n        return ErrorHandler.NotFound(\"User not found\")\n\n    @staticmethod\n    def logout(res: Response):\n        try:\n            res.delete_cookie(TOKEN_KEY)\n            return {\"message\": \"Logged out\"}\n        except Exception as e:\n            return ErrorHandler.NotFound(e)\n"
         },
         {
-            "path": "./fastapi-mongo/handlers/__init__.py",
+            "path": "./handlers/__init__.py",
             "content": ""
         }
     ],
-    "./fastapi-mongo/core": [
+    "./core": [
         {
-            "path": "./fastapi-mongo/core/database.py",
+            "path": "./core/database.py",
             "content": "from pymongo import MongoClient\nfrom utils.envutils import Environment\n\nenv = Environment()\n\n\nclient = MongoClient(env.MONGO_URI)\n\ndb = client[\"fastapi-mongo\"]\n\nuser_collection = db[\"users\"]\n"
         },
         {
-            "path": "./fastapi-mongo/core/__init__.py",
+            "path": "./core/__init__.py",
             "content": ""
         }
     ],
-    "./fastapi-mongo/utils": [
+    "./utils": [
         {
-            "path": "./fastapi-mongo/utils/passhashutils.py",
+            "path": "./utils/passhashutils.py",
             "content": "from passlib.hash import bcrypt\n\n\nclass Encryptor:\n    @staticmethod\n    def hash_password(password: str) -> str:\n        return bcrypt.hash(password)\n\n    @staticmethod\n    def verify_password(password: str, hash: str) -> bool:\n        return bcrypt.verify(password, hash)\n"
         },
         {
-            "path": "./fastapi-mongo/utils/envutils.py",
+            "path": "./utils/envutils.py",
             "content": "from dotenv import load_dotenv\nimport os\n\nload_dotenv()\n\n\nclass Environment():\n    def __init__(self):\n        self.MONGO_URI = os.getenv(\"MONGO_URI\")\n        self.secret_key = os.getenv(\"SECRET_KEY\")\n        self.algorithm = os.getenv(\"ALGORITHM\")\n        self.access_token_expire_minutes = int(os.getenv(\n            \"ACCESS_TOKEN_EXPIRE_MINUTES\"))\n        self.TOKEN_TYPE = \"bearer\"\n        self.TOKEN_KEY = \"token\"\n"
         },
         {
-            "path": "./fastapi-mongo/utils/jwtutil.py",
+            "path": "./utils/jwtutil.py",
             "content": "#! Not sure if it works or not jfix the code if it doesn't work\nfrom fastapi import Request, Response, HTTPException, status\nfrom fastapi import HTTPException, status, Request, Response\nfrom jose import JWTError, jwt\nfrom datetime import datetime, timedelta\nfrom models import schemas\nimport os\nfrom utils.envutils import Environment\n\nenv = Environment()\nsecret_key = env.secret_key\nALGORITHM = env.algorithm\nACCESS_TOKEN_EXPIRE_MINUTES = env.access_token_expire_minutes\nTOKEN_TYPE = env.TOKEN_TYPE\nTOKEN_KEY = env.TOKEN_KEY\n\n# Create the access token\n\n\ndef create_access_token(data: dict, expires_delta: timedelta | None = None):\n    to_encode = data.copy()\n    if expires_delta:\n        expire = datetime.utcnow() + expires_delta\n    else:\n        expire = datetime.utcnow() + timedelta(minutes=15)\n    to_encode.update({\"exp\": expire})\n    encoded_jwt = jwt.encode(to_encode, secret_key, algorithm=ALGORITHM)\n    return encoded_jwt\n\n"
         },
         {
-            "path": "./fastapi-mongo/utils/__init__.py",
+            "path": "./utils/__init__.py",
             "content": ""
         }
     ],
-    "./fastapi-mongo/models": [
+    "./models": [
         {
-            "path": "./fastapi-mongo/models/schemas.py",
+            "path": "./models/schemas.py",
             "content": "from pydantic import BaseModel\n\n\nclass User(BaseModel):\n    name: str\n    email: str\n    password: str\n\n\nclass UpdateUserEmail(BaseModel):\n    email: str\n"
         },
         {
-            "path": "./fastapi-mongo/models/models.py",
+            "path": "./models/models.py",
             "content": "from pydantic import BaseModel, EmailStr, Field\n\n\nclass User(BaseModel):\n    name: str = Field(..., min_length=1, max_length=100)\n    email: EmailStr = Field(..., min_length=5, max_length=100)\n"
         },
         {
-            "path": "./fastapi-mongo/models/__init__.py",
+            "path": "./models/__init__.py",
             "content": ""
         }
     ]
