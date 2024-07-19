@@ -22,33 +22,39 @@ build
 ## Provided folder structure is as follows
 ```
 .
-├── config
-│   ├── dependencies.py
-│   └── __init__.py
-├── core
-│   ├── database.py
-│   └── __init__.py
-├── handlers
-│   ├── authhandler.py
-│   ├── exception.py
+├── app
+│   ├── apis
+│   │   ├── auth.py
+│   │   ├── google.py
+│   │   └── __init__.py
+│   ├── config
+│   │   ├── cloudinary_config.py
+│   │   ├── dependencies.py
+│   │   ├── __init__.py
+│   │   └── oauth_config.py
+│   ├── core
+│   │   ├── database.py
+│   │   └── __init__.py
+│   ├── handlers
+│   │   ├── Auth
+│   │   │   ├── authhandler.py
+│   │   │   ├── emailHandler.py
+│   │   │   └── __init__.py
+│   │   ├── exception.py
+│   │   └── __init__.py
 │   ├── __init__.py
-│   └── userhandler.py
-├── __init__.py
+│   ├── models
+│   │   ├── __init__.py
+│   │   └── schemas.py
+│   └── utils
+│       ├── authutils.py
+│       ├── envutils.py
+│       ├── __init__.py
+│       ├── jwtutil.py
+│       └── passhashutils.py
+├── Dockerfile
 ├── main.py
-├── models
-│   ├── __init__.py
-│   ├── models.py
-│   └── schemas.py
-├── Readme.md
-├── requirements.txt
-├── routers
-│   ├── auth.py
-│   └── user.py
-└── utils
-    ├── envutils.py
-    ├── __init__.py
-    ├── jwtutil.py
-    └── passhashutils.py
+└── requirements.txt
 ```
 ## Navigation 
 
