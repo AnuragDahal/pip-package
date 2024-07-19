@@ -1,7 +1,7 @@
 from passlib.hash import bcrypt
 
 
-class Encryptor:
+class Encrypt:
     @staticmethod
     def hash_password(password: str) -> str:
         return bcrypt.hash(password)

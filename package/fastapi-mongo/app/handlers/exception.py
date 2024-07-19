@@ -19,3 +19,6 @@ class ErrorHandler:
 
     def ALreadyExists(e):
         raise HTTPException(status_code=409, detail=str(e))
+
+    def UnprocessableEntity(e):
+        raise HTTPException(status_code=422, detail=str(e))

@@ -2,4 +2,4 @@ tempcoderunner
 **/__pycache__/
 **/.vscode/
 .env
-env/
+.venv/
