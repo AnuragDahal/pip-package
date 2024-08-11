@@ -2,7 +2,7 @@
     ".": [
         {
             "path": "./.env.sample",
-            "content": "MONGO_URI=\"mongodb+srv://<username>:<password>@<cluster>.igpenxg.mongodb.net/<dbname>\"\nSECRET_KEY = \"4d2d63872da9bacbe250ddf9c2c948ff0a2664aece7a988827b8a67d88cda078\"\nALGORITHM = \"HS256\"\nACCESS_TOKEN_EXPIRE_DAYS = 7\nCLIENT_ID=\"\"\nCLIENT_SECRET=\"\"\nOAUTHSECRET_KEY= \"my-secret\"\nGOOGLE_REDIRECT_URI=\"http://localhost:8000/auth/google/callback\"\nGMAIL_USER=\"\"\nAPP_SPECIFIC_PASS=\"\"\nCLOUDINARY_URL=\"\"\n\""
+            "content": "MONGO_URI=\"mongodb+srv://<username>:<password>@<cluster>.igpenxg.mongodb.net/<dbname>\"\nSECRET_KEY = \"4d2d63872da9bacbe250ddf9c2c948ff0a2664aece7a988827b8a67d88cda078\"\nALGORITHM = \"HS256\"\nACCESS_TOKEN_EXPIRE_DAYS = 7\nCLIENT_ID=\"\"\nCLIENT_SECRET=\"\"\nOAUTHSECRET_KEY= \"my-secret\"\nGOOGLE_REDIRECT_URI=\"http://localhost:8000/auth/google/callback\"\nGMAIL_USER=\"\"\nAPP_SPECIFIC_PASS=\"\"\nCLOUDINARY_URL=\"\"\n"
         },
         {
             "path": "./main.py",
@@ -37,16 +37,6 @@
             "content": "# from pymongo import MongoClient, IndexModel, ASCENDING\nfrom motor.motor_asyncio import AsyncIOMotorClient\nfrom ..utils.envutils import Environment\n\nenv = Environment()\n\n\nclient = AsyncIOMotorClient(env.MONGO_URI)\n\ndb = client[\"<database_name>\"]\n\nuser_collection = db[\"users\"]\n\notp_collection = db[\"otp\"]\n\n# Create a TTL(Time to live) index on the 'expires_on' field that means after the 30 sec of the value is set for the 'expires_on' field, the document will be deleted.\nindex = [(\"expires_on\", 1)]\notp_collection.create_index(index, expireAfterSeconds=30)\n"
         }
     ],
-    "./app/core/__pycache__": [
-        {
-            "path": "./app/core/__pycache__/__init__.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/core/__pycache__/database.cpython-312.pyc",
-            "content": "Unable to read file content"
-        }
-    ],
     "./app/apis": [
         {
             "path": "./app/apis/__init__.py",
@@ -62,37 +52,7 @@
         },
         {
             "path": "./app/apis/google.py",
-            "content": "from fastapi import HTTPException, APIRouter, Request\nfrom starlette.responses import RedirectResponse\nfrom ..config.oauth_config import google, generate_state, validate_token\nfrom ..handlers.User.userhandler import Validate\nfrom ..core.database import user_collection\nfrom ..utils.jwtutil import create_access_token\nfrom ..handlers.exception import ErrorHandler\nfrom ..utils.envutils import Environment\nfrom datetime import timedelta\nenv = Environment()\n\n\nrouter = APIRouter(tags=['Google OAuth'], prefix='/api/v1/google')\n\n\n@router.get('/login')\nasync def login(request: Request):\n    state = generate_state()\n    request.session['state'] = state\n    redirect_uri = request.url_for('auth')\n    # print(f\"State in /login: {state}\")\n    return await google.authorize_redirect(request, redirect_uri, state=state)\n\n\n@router.get('/auth')\nasync def auth(request: Request):\n    state = request.session.get('state')\n    stateInQuery = request.query_params.get('state')\n    if not state or state != stateInQuery:\n        return ErrorHandler.Error(f\"State mismatch: session state {state} != query state {stateInQuery}\")\n\n    token = await google.authorize_access_token(request)\n    id_token = token.get('id_token')\n\n    if not id_token:\n        return ErrorHandler.Unauthorized('Unable to authenticate.')\n\n    try:\n        claims = validate_token(id_token)\n        username = claims.get('name')\n        user_email = claims.get('email')\n        isEmailVerified = claims.get('email_verified')\n        profile_picture = claims.get('picture')\n\n        isUser = await Validate.verify_email(user_email)\n        if not isUser:\n            await user_collection.insert_one({\n                \"name\": username,\n                \"email\": user_email,\n                \"password\": \"google_oauth\",  # differentiate OAuth users\n                \"profile_picture\": profile_picture,\n                \"isEmailVerified\": isEmailVerified,\n                \"friends\": [],\n                \"friend_requests\": [],\n                \"posts\": [],\n                \"commented\": [],\n                \"comments_on_posts\": [],\n                \"likes\": [],\n            })\n        access_token_expires = timedelta(\n            minutes=env.ACCESS_TOKEN_EXPIRE_DAYS)\n        access_token = create_access_token(\n            data={\"sub\": user_email}, expires_delta=access_token_expires)\n    except Exception as e:\n        print(f\"Token validation error: {e}\")\n        return ErrorHandler.Unauthorized('Invalid token.')\n\n    return RedirectResponse(url=f'/home?token={access_token}')\n"
-        }
-    ],
-    "./app/apis/__pycache__": [
-        {
-            "path": "./app/apis/__pycache__/posts.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/apis/__pycache__/__init__.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/apis/__pycache__/user.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/apis/__pycache__/comments.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/apis/__pycache__/auth.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/apis/__pycache__/friends.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/apis/__pycache__/google.cpython-312.pyc",
-            "content": "Unable to read file content"
+            "content": "from fastapi import HTTPException, APIRouter, Request\nfrom starlette.responses import RedirectResponse\nfrom ..config.oauth_config import google, generate_state, validate_token\nfrom ..handlers.Auth.authhandler import Validate\nfrom ..core.database import user_collection\nfrom ..utils.jwtutil import create_access_token\nfrom ..handlers.exception import ErrorHandler\nfrom ..utils.envutils import Environment\nfrom datetime import timedelta\nenv = Environment()\n\n\nrouter = APIRouter(tags=['Google OAuth'], prefix='/api/v1/google')\n\n\n@router.get('/login')\nasync def login(request: Request):\n    state = generate_state()\n    request.session['state'] = state\n    redirect_uri = request.url_for('auth')\n    # print(f\"State in /login: {state}\")\n    return await google.authorize_redirect(request, redirect_uri, state=state)\n\n\n@router.get('/auth')\nasync def auth(request: Request):\n    state = request.session.get('state')\n    stateInQuery = request.query_params.get('state')\n    if not state or state != stateInQuery:\n        return ErrorHandler.Error(f\"State mismatch: session state {state} != query state {stateInQuery}\")\n\n    token = await google.authorize_access_token(request)\n    id_token = token.get('id_token')\n\n    if not id_token:\n        return ErrorHandler.Unauthorized('Unable to authenticate.')\n\n    try:\n        claims = validate_token(id_token)\n        username = claims.get('name')\n        user_email = claims.get('email')\n        isEmailVerified = claims.get('email_verified')\n        profile_picture = claims.get('picture')\n\n        isUser = await Validate.verify_email(user_email)\n        if not isUser:\n            await user_collection.insert_one({\n                \"name\": username,\n                \"email\": user_email,\n                \"password\": \"google_oauth\",  # differentiate OAuth users\n                \"profile_picture\": profile_picture,\n                \"isEmailVerified\": isEmailVerified,\n                \"friends\": [],\n                \"friend_requests\": [],\n                \"posts\": [],\n                \"commented\": [],\n                \"comments_on_posts\": [],\n                \"likes\": [],\n            })\n        access_token_expires = timedelta(\n            minutes=env.ACCESS_TOKEN_EXPIRE_DAYS)\n        access_token = create_access_token(\n            data={\"sub\": user_email}, expires_delta=access_token_expires)\n    except Exception as e:\n        print(f\"Token validation error: {e}\")\n        return ErrorHandler.Unauthorized('Invalid token.')\n\n    return RedirectResponse(url=f'/home?token={access_token}')\n"
         }
     ],
     "./app/utils": [
@@ -115,28 +75,6 @@
         {
             "path": "./app/utils/jwtutil.py",
             "content": "from datetime import datetime, timedelta, timezone\nfrom ..utils.envutils import Environment\nfrom jose import jwt\nimport os\n\nenv = Environment()\n\n\ndef create_access_token(data: dict, expires_delta: timedelta | None = None):\n    to_encode = data.copy()\n    if expires_delta:\n        expire = datetime.now(timezone.utc) + expires_delta\n    else:\n        expire = datetime.now(timezone.utc) + timedelta(minutes=15)\n    to_encode.update({\"exp\": expire})\n    encoded_jwt = jwt.encode(to_encode, env.SECRET_KEY,\n                             algorithm=env.ALGORITHM)\n    return encoded_jwt\n"
-        }
-    ],
-    "./app/utils/__pycache__": [
-        {
-            "path": "./app/utils/__pycache__/__init__.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/utils/__pycache__/envutils.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/utils/__pycache__/passhashutils.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/utils/__pycache__/authutils.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/utils/__pycache__/jwtutil.cpython-312.pyc",
-            "content": "Unable to read file content"
         }
     ],
     "./app/handlers": [
@@ -163,20 +101,6 @@
             "content": "import smtplib\nfrom fastapi import Request\nfrom email.mime.multipart import MIMEMultipart\nfrom email.mime.text import MIMEText\nfrom ...utils.envutils import Environment\nimport random\nfrom jose import jwt, JWTError\nfrom ...core.database import otp_collection, user_collection\nfrom ...handlers.exception import ErrorHandler\nfrom datetime import datetime, timezone\nenv = Environment()\n\n'''\nThe @staticmethod decorator is used to declare a method as a static method, which means it belongs to the class and not the instance of the class. It can be called on the class itself, rather than on an instance of the class.'''\n\n\nclass EmailHandler:\n    '''\n    This class is responsible for handling the email verification process.'''\n    @staticmethod\n    def generate_email_verification_otp():\n        # Generate a random 6-digit number\n        return str(random.randint(100000, 999999))\n\n    @staticmethod\n    def send_email_to(recipient: str, htmlContent: str, subject: str):\n        # Define your Gmail username and password\n        gmail_user = env.GMAIL_USER\n        gmail_password = env.APP_SPECIFIC_PASS\n\n        # Create a MIMEMultipart object\n        msg = MIMEMultipart('alternative')\n        html = f'''{htmlContent}'''\n        # Add the HTML content to the MIMEMultipart object\n        msg.attach(MIMEText(html, 'html'))\n        msg['Subject'] = subject\n        msg['From'] = \"mailer@connectify.com\"\n        msg['To'] = recipient\n\n        # Connect to the Gmail server\n        server = smtplib.SMTP('smtp.gmail.com', 587)\n        server.starttls()\n\n        # Login to your Gmail account\n        server.login(gmail_user, gmail_password)\n\n        # Send the email\n        try:\n            server.send_message(msg)\n            server.quit()\n            return True\n        except Exception as e:\n            print(str(e))\n            return False\n\n    @staticmethod\n    def VerifyOtp(otp, user_otp):\n        if otp == user_otp:\n            return True\n        return False\n\n    @staticmethod\n    async def HandleEmailVerification(recipient: str, user_email: str, flag: str):\n        try:\n            if recipient != user_email:\n                return ErrorHandler.Unauthorized(\"Invalid Email Address\")\n            otp = EmailHandler.generate_email_verification_otp()\n            htmlContent = f\"\"\"\n                    <html>\n                    <body>\n                        <p>Dear User,</p>\n\n                        <p>We recently received a request for a new login or signup associated with this email address. If you initiated this request, please enter the following verification code to confirm your identity:</p>\n\n                        <p><b>Verification Code: {otp}</b></p>\n\n                        <p>If you did not initiate this request, please disregard this email and no changes will be made to your account.</p>\n\n                        <p>Thank you,<br>\n                        The Connectify Team</p>\n                    </body>\n                    </html>\n                    \"\"\"\n            sub = \"Email Verification\"\n            isEmailSent = EmailHandler.send_email_to(\n                recipient, htmlContent, sub)\n            # Add the otp to the database\n            await otp_collection.insert_one(\n                {\"email\": recipient, \"otp\": otp, f\"{flag}\": True, \"expires_on\": datetime.now(timezone.utc)})\n            if isEmailSent:\n                return \"Email sent Successfully\"\n            else:\n                return ErrorHandler.Error(\"Invalid Email Address or Email not sent successfully\")\n        except Exception as e:\n            return str(e)\n\n    @staticmethod\n    async def HandleOtpVerification(user_otp: str, user_email: str, flag: str):\n        # Attempt to retrieve the OTP document for the user\n        email_doc = await otp_collection.find_one({\"email\": user_email})\n        if email_doc is None:\n            return ErrorHandler.Error(\"Invalid Email or OTP not found in the database\")\n        # Verify the OTP and the flag\n        otp_in_db = email_doc[\"otp\"]\n        isOtpVerified = EmailHandler.VerifyOtp(user_otp, otp_in_db)\n        if not isOtpVerified or not email_doc.get(flag, False):\n            return ErrorHandler.Unauthorized(\"Email Verification Failed, incorrect OTP\")\n\n        # Ensure the user exists\n        isUser = await user_collection.find_one({\"email\": user_email})\n        if not isUser:\n            return ErrorHandler.NotFound(\"User not found in the database\")\n\n        # Update the user's email verification status and delete the OTP\n        await user_collection.update_one({\"email\": user_email}, {\"$set\": {\"isEmailVerified\": True}})\n        await otp_collection.find_one_and_delete({\"email\": user_email})\n        return \"Email Verified Successfully\"\n"
         }
     ],
-    "./app/handlers/Auth/__pycache__": [
-        {
-            "path": "./app/handlers/Auth/__pycache__/__init__.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/handlers/Auth/__pycache__/emailHandler.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/handlers/Auth/__pycache__/authhandler.cpython-312.pyc",
-            "content": "Unable to read file content"
-        }
-    ],
     "./app/handlers/User": [
         {
             "path": "./app/handlers/User/__init__.py",
@@ -184,35 +108,11 @@
         },
         {
             "path": "./app/handlers/User/userhandler.py",
-            "content": "from ...models import schemas\nfrom fastapi import Response, UploadFile\nfrom ...core.database import user_collection\nfrom ..exception import ErrorHandler\nfrom pymongo import ReturnDocument\nfrom ...config.cloudinary_config import uploadImage\nfrom ...utils.passhashutils import Encrypt\nfrom typing import Optional\nfrom ...core.database import post_collection, comments_collection\nfrom ...utils.passhashutils import Encrypt\nfrom ..Auth.authhandler import Validate\n\n\nclass UserManager:\n    @staticmethod\n    async def HandleNewUserCreation(request: schemas.UserDetails):\n        \"\"\"\n        Insert a new user record.\n        A unique `id` will be created and provided in the response.\n        \"\"\"\n        duplicate_user = await Validate.verify_email(request.email)\n        if not duplicate_user:\n            hashed_password = Encrypt.hash_password(request.password)\n            # Add the image to the server and set the url in the db\n            user_data = {\n                **request.model_dump(exclude={\"password\"}), \"password\": hashed_password, \"isEmailVerified\": False}\n            # Add the img url to the user's db\n            new_user = await user_collection.insert_one(user_data)\n            return {\"id\": str(new_user.inserted_id)}\n        return ErrorHandler.ALreadyExists(\"User already exists\")\n\n    @staticmethod\n    async def HandleReadingUserRecords():\n        \"\"\"\n        Retrieve all user records.\n        \"\"\"\n        count = await user_collection.count_documents({})\n        if count > 0:\n            # this is a asynchronous cursor so we need to iterate over it using async for loop\n            AsyncIOMotorCursor = user_collection.find()\n            users = []\n            async for user in AsyncIOMotorCursor:\n                users.append(user)\n            return users\n        else:\n            raise ErrorHandler.NotFound(\"No user found\")\n\n    @staticmethod\n    async def HandleUserDeletion(user_email: str, password: str, res: Response):\n        \"\"\"\n        Delete a user\n        \"\"\"\n        # Check the password is correct\n        user_details = await user_collection.find_one({\"email\": user_email})\n        if not Encrypt.verify_password(password, user_details[\"password\"]):\n            return ErrorHandler.Unauthorized(\"Incorrect Password\")\n\n        # Delete the user through the email\n        deleted_user = await user_collection.delete_one({\"email\": user_email})\n        if deleted_user.deleted_count == 0:\n            return ErrorHandler.NotFound(\"User not found\")\n        # Delete all the data sets associated with the user such as posts, comments, etc.\n        await comments_collection.delete_many({\"commented_by\": user_email})\n        await post_collection.delete_many({\"posted_by\": user_email})\n        res.delete_cookie('token')\n        return {\"message\": \"User deleted successfully\"}\n"
+            "content": "from ...models import schemas\nfrom ...core.database import user_collection\nfrom ..exception import ErrorHandler\nfrom ...utils.passhashutils import Encrypt\nfrom ...utils.passhashutils import Encrypt\nfrom ..Auth.authhandler import Validate\n\n\nclass UserManager:\n    @staticmethod\n    async def HandleNewUserCreation(request: schemas.UserDetails):\n        \"\"\"\n        Insert a new user record.\n        A unique `id` will be created and provided in the response.\n        \"\"\"\n        duplicate_user = await Validate.verify_email(request.email)\n        if not duplicate_user:\n            hashed_password = Encrypt.hash_password(request.password)\n            # Add the image to the server and set the url in the db\n            user_data = {\n                **request.model_dump(exclude={\"password\"}), \"password\": hashed_password, \"isEmailVerified\": False}\n            # Add the img url to the user's db\n            new_user = await user_collection.insert_one(user_data)\n            return {\"id\": str(new_user.inserted_id)}\n        return ErrorHandler.ALreadyExists(\"User already exists\")\n\n    @staticmethod\n    async def HandleReadingUserRecords():\n        \"\"\"\n        Retrieve all user records.\n        \"\"\"\n        count = await user_collection.count_documents({})\n        if count > 0:\n            # this is a asynchronous cursor so we need to iterate over it using async for loop\n            AsyncIOMotorCursor = user_collection.find()\n            users = []\n            async for user in AsyncIOMotorCursor:\n                users.append(user)\n            return users\n        else:\n            raise ErrorHandler.NotFound(\"No user found\")\n        "
         },
         {
             "path": "./app/handlers/User/uploadhandler.py",
             "content": "from ...config.cloudinary_config import uploadImage\nfrom ...core.database import user_collection\nfrom pymongo import ReturnDocument\nfrom ..Auth.authhandler import Validate\nfrom ..exception import ErrorHandler\nfrom fastapi import UploadFile\n\n\nclass UploadManager:\n    @staticmethod\n    async def HandleUploadProfilePic(user_email: str, img: UploadFile):\n        \"\"\"\n        Upload the user profile picture.\n        \"\"\"\n        # Check the user in db\n        try:\n            isUser = await Validate.verify_email(user_email)\n            if not isUser:\n                return ErrorHandler.NotFound(\"User not found\")\n            filename = img.filename.split(\".\")[0][:10]\n            img_bytes = await img.read()\n            # Upload the image and get its URL\n            img_url = uploadImage(filename, img_bytes)\n            # Save the image URL in the database\n            user = await user_collection.find_one_and_update(\n                {\"email\": user_email},\n                {\"$set\": {\"profile_picture\": img_url}},\n                # this will return the updated document\n                return_document=ReturnDocument.AFTER\n            )\n            return {\"profile_pic\": user[\"profile_picture\"]}\n        except Exception as e:\n            return ErrorHandler.Error(e)\n"
-        }
-    ],
-    "./app/handlers/User/__pycache__": [
-        {
-            "path": "./app/handlers/User/__pycache__/__init__.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/handlers/User/__pycache__/userhandler.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/handlers/User/__pycache__/uploadhandler.cpython-312.pyc",
-            "content": "Unable to read file content"
-        }
-    ],
-    "./app/handlers/__pycache__": [
-        {
-            "path": "./app/handlers/__pycache__/__init__.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/handlers/__pycache__/exception.cpython-312.pyc",
-            "content": "Unable to read file content"
         }
     ],
     "./app/models": [
@@ -223,22 +123,6 @@
         {
             "path": "./app/models/schemas.py",
             "content": "from pydantic import BaseModel, EmailStr\nfrom typing import List, Optional\nfrom enum import Enum\n\nclass Privacy(str, Enum):\n    public = \"public\"\n    private = \"private\"\n    friends = \"friends\"\n\n\nclass OauthUser(BaseModel):\n    name: str\n    email: EmailStr\n    isEmailVerified: Optional[bool]\n    isEmailVerified: Optional[bool] = False\n    friends: Optional[List[str]] = []\n    profile_picture: Optional[str] = []\n    posts: Optional[List[str]] = []\n    commented: Optional[List[str]] = []\n    comments_on_posts: Optional[List[str]] = []\n\nclass UserDetails(BaseModel):\n    name: str\n    email: EmailStr\n    password: str\n    isEmailVerified: Optional[bool] = False\n    friends: Optional[List[str]] = []\n    friend_requests: Optional[List[str]] = []\n    sent_friend_requests: Optional[List[str]] = []\n    profile_picture: Optional[str] = str()\n    # posts: Optional[List[Dict[str, Any]]] = []\n    posts: Optional[List[str]] = []\n    commented: Optional[List[str]] = []\n    comments_on_posts: Optional[List[str]] = []\n\n\nclass UpdateUserEmail(BaseModel):\n    email: EmailStr\n"
-        }
-    ],
-    "./app/models/__pycache__": [
-        {
-            "path": "./app/models/__pycache__/__init__.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/models/__pycache__/schemas.cpython-312.pyc",
-            "content": "Unable to read file content"
-        }
-    ],
-    "./app/__pycache__": [
-        {
-            "path": "./app/__pycache__/__init__.cpython-312.pyc",
-            "content": "Unable to read file content"
         }
     ],
     "./app/config": [
@@ -257,24 +141,6 @@
         {
             "path": "./app/config/dependencies.py",
             "content": "from fastapi import Depends, HTTPException, status, Response, Request\nfrom typing import Annotated\nfrom fastapi.security import OAuth2PasswordBearer\nfrom jose import JWTError, jwt\nfrom ..utils.envutils import Environment\nfrom ..core.database import user_collection\nfrom ..utils.passhashutils import Encrypt\n\nenv = Environment()\n\noauth2_scheme = OAuth2PasswordBearer(tokenUrl=\"api/v1/login\")\n\n\nasync def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):\n\n    return verify_token\n\n\nasync def verify_token(req: Request, res: Response):\n    try:\n        token = await req.cookies.get(\"token\")\n\n        if token is None:\n            raise HTTPException(\n                status_code=status.HTTP_401_UNAUTHORIZED,\n                detail=\"Could not validate credentials: Token missing\",\n                headers={\"WWW-Authenticate\": \"Bearer\"},\n            )\n\n        try:\n            payload = jwt.decode(token, env.SECRET_KEY,\n                                 algorithms=[env.algorithm])\n        except jwt.ExpiredSignatureError:\n            raise HTTPException(\n                status_code=status.HTTP_401_UNAUTHORIZED,\n                detail=\"Token expired\",\n                headers={\"WWW-Authenticate\": \"Bearer\"},\n            )\n        except JWTError:\n            raise HTTPException(\n                status_code=status.HTTP_401_UNAUTHORIZED,\n                detail=\"Could not validate credentials\",\n                headers={\"WWW-Authenticate\": \"Bearer\"},\n            )\n\n        email: str = payload.get(\"sub\")\n        password: str = payload.get(\"password\")\n        # Check the password from the token\n        user = await user_collection.find_one({\"email\": email})\n        if not user or not Encrypt.verify_password(password, user[\"password\"]):\n            raise HTTPException(\n                status_code=status.HTTP_401_UNAUTHORIZED,\n                detail=\"Could not validate credentials: Incorrect email or password\",\n                headers={\"WWW-Authenticate\": \"Bearer\"},\n            )\n    except HTTPException as e:\n        raise e\n    except Exception as e:\n        raise HTTPException(\n            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,\n            detail=\"An error occurred while verifying the token.\",\n        )\n"
-        }
-    ],
-    "./app/config/__pycache__": [
-        {
-            "path": "./app/config/__pycache__/__init__.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/config/__pycache__/cloudinary_config.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/config/__pycache__/dependencies.cpython-312.pyc",
-            "content": "Unable to read file content"
-        },
-        {
-            "path": "./app/config/__pycache__/oauth_config.cpython-312.pyc",
-            "content": "Unable to read file content"
         }
     ]
 }
