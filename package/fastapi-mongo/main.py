@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Query, Response, Request
-from app.apis import user, auth, google, posts, comments, friends
+from app.apis import user, auth, google
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import client
 from starlette.middleware.sessions import SessionMiddleware
@@ -54,6 +54,4 @@ def home(res: Response = None, token: str = Query(...)):
 app.include_router(user.router)
 app.include_router(auth.router)
 app.include_router(google.router)
-app.include_router(posts.router)
-app.include_router(comments.router)
-app.include_router(friends.router)
+

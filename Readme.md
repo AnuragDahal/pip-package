@@ -21,12 +21,12 @@ build
 
 ## Provided folder structure is as follows
 ```
-.
-├── app
+.├── app
 │   ├── apis
 │   │   ├── auth.py
 │   │   ├── google.py
-│   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   └── user.py
 │   ├── config
 │   │   ├── cloudinary_config.py
 │   │   ├── dependencies.py
@@ -41,7 +41,11 @@ build
 │   │   │   ├── emailHandler.py
 │   │   │   └── __init__.py
 │   │   ├── exception.py
-│   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   └── User
+│   │       ├── __init__.py
+│   │       ├── uploadhandler.py
+│   │       └── userhandler.py
 │   ├── __init__.py
 │   ├── models
 │   │   ├── __init__.py
